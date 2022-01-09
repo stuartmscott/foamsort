@@ -36,7 +36,7 @@ func FoamSort(slice []int, less func(int, int) bool) {
 	for w := 0; w < runtime.GOMAXPROCS(0); w++ {
 		go work()
 	}
-	// Adds indeces of non-overlapping pairs to job queue.
+	// Adds indices of non-overlapping pairs to job queue.
 	// Waits for all results.
 	sort := func(start int) (result bool) {
 		for i := start; i < limit-1; i += 2 {
