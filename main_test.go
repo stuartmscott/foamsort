@@ -69,6 +69,8 @@ func BenchmarkStandardSort_Random_1K(b *testing.B) {
 	benchmarkStandardSort_Random(b, 1000)
 }
 
+// Helper Functions
+
 func benchmarkFoamSort_Best(b *testing.B, c int) {
 	for n := 0; n < b.N; n++ {
 		slice := generateBestSlice(c)
