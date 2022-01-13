@@ -26,6 +26,14 @@ func TestBubbleSort(t *testing.T) {
 	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, slice)
 }
 
+func TestRedditSort(t *testing.T) {
+	slice := []int{1, 5, 2, 6, 3, 7, 4, 9, 8, 0}
+	main.RedditSort(slice, func(a, b int) bool {
+		return slice[a] < slice[b]
+	})
+	assert.Equal(t, []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, slice)
+}
+
 const EXPENSIVE_COMPARISON = true
 
 // Best Case: Sorted Integers
@@ -36,6 +44,10 @@ func BenchmarkFoamSort_Best_1K(b *testing.B) {
 
 func BenchmarkBubbleSort_Best_1K(b *testing.B) {
 	benchmarkBubbleSort_Best(b, 1000)
+}
+
+func BenchmarkRedditSort_Best_1K(b *testing.B) {
+	benchmarkRedditSort_Best(b, 1000)
 }
 
 func BenchmarkStandardSort_Best_1K(b *testing.B) {
@@ -52,6 +64,10 @@ func BenchmarkBubbleSort_Worst_1K(b *testing.B) {
 	benchmarkBubbleSort_Worst(b, 1000)
 }
 
+func BenchmarkRedditSort_Worst_1K(b *testing.B) {
+	benchmarkRedditSort_Worst(b, 1000)
+}
+
 func BenchmarkStandardSort_Worst_1K(b *testing.B) {
 	benchmarkStandardSort_Worst(b, 1000)
 }
@@ -64,6 +80,10 @@ func BenchmarkFoamSort_Random_1K(b *testing.B) {
 
 func BenchmarkBubbleSort_Random_1K(b *testing.B) {
 	benchmarkBubbleSort_Random(b, 1000)
+}
+
+func BenchmarkRedditSort_Random_1K(b *testing.B) {
+	benchmarkRedditSort_Random(b, 1000)
 }
 
 func BenchmarkStandardSort_Random_1K(b *testing.B) {
@@ -84,6 +104,14 @@ func benchmarkBubbleSort_Best(b *testing.B, c int) {
 	for n := 0; n < b.N; n++ {
 		slice := generateBestSlice(c)
 		bubbleSort(slice)
+		assert.True(b, sorted(slice))
+	}
+}
+
+func benchmarkRedditSort_Best(b *testing.B, c int) {
+	for n := 0; n < b.N; n++ {
+		slice := generateBestSlice(c)
+		redditSort(slice)
 		assert.True(b, sorted(slice))
 	}
 }
@@ -112,6 +140,14 @@ func benchmarkBubbleSort_Worst(b *testing.B, c int) {
 	}
 }
 
+func benchmarkRedditSort_Worst(b *testing.B, c int) {
+	for n := 0; n < b.N; n++ {
+		slice := generateWorstSlice(c)
+		redditSort(slice)
+		assert.True(b, sorted(slice))
+	}
+}
+
 func benchmarkStandardSort_Worst(b *testing.B, c int) {
 	for n := 0; n < b.N; n++ {
 		slice := generateWorstSlice(c)
@@ -136,6 +172,14 @@ func benchmarkBubbleSort_Random(b *testing.B, c int) {
 	}
 }
 
+func benchmarkRedditSort_Random(b *testing.B, c int) {
+	for n := 0; n < b.N; n++ {
+		slice := generateRandomSlice(c)
+		redditSort(slice)
+		assert.True(b, sorted(slice))
+	}
+}
+
 func benchmarkStandardSort_Random(b *testing.B, c int) {
 	for n := 0; n < b.N; n++ {
 		slice := generateRandomSlice(c)
@@ -155,6 +199,15 @@ func foamSort(slice []int) {
 
 func bubbleSort(slice []int) {
 	main.BubbleSort(slice, func(a, b int) bool {
+		if EXPENSIVE_COMPARISON {
+			busyWork()
+		}
+		return slice[a] < slice[b]
+	})
+}
+
+func redditSort(slice []int) {
+	main.RedditSort(slice, func(a, b int) bool {
 		if EXPENSIVE_COMPARISON {
 			busyWork()
 		}
