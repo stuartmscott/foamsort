@@ -2,19 +2,61 @@ package main
 
 import (
 	"log"
+	"math/rand"
 	"runtime"
+	"time"
 )
 
 func main() {
-	slice := []int{1, 5, 2, 6, 3, 7, 4, 9, 8, 0}
-	log.Println(slice)
-	FoamSort(slice, func(a, b int) bool {
+	var slice []int
+	less := func(a, b int) bool {
 		return slice[a] < slice[b]
-	})
-	log.Println(slice)
+	}
+
+	// Best
+	slice = GenerateBestSlice(1000)
+	if err := CreateGif("foam_best", slice, FoamSort, less); err != nil {
+		log.Fatal(err)
+	}
+	slice = GenerateBestSlice(1000)
+	if err := CreateGif("bubble_best", slice, BubbleSort, less); err != nil {
+		log.Fatal(err)
+	}
+	slice = GenerateBestSlice(1000)
+	if err := CreateGif("reddit_best", slice, RedditSort, less); err != nil {
+		log.Fatal(err)
+	}
+
+	// Worst
+	slice = GenerateWorstSlice(1000)
+	if err := CreateGif("foam_worst", slice, FoamSort, less); err != nil {
+		log.Fatal(err)
+	}
+	slice = GenerateWorstSlice(1000)
+	if err := CreateGif("bubble_worst", slice, BubbleSort, less); err != nil {
+		log.Fatal(err)
+	}
+	slice = GenerateWorstSlice(1000)
+	if err := CreateGif("reddit_worst", slice, RedditSort, less); err != nil {
+		log.Fatal(err)
+	}
+
+	// Random
+	slice = GenerateRandomSlice(1000)
+	if err := CreateGif("foam_random", slice, FoamSort, less); err != nil {
+		log.Fatal(err)
+	}
+	slice = GenerateRandomSlice(1000)
+	if err := CreateGif("bubble_random", slice, BubbleSort, less); err != nil {
+		log.Fatal(err)
+	}
+	slice = GenerateRandomSlice(1000)
+	if err := CreateGif("reddit_random", slice, RedditSort, less); err != nil {
+		log.Fatal(err)
+	}
 }
 
-func FoamSort(slice []int, less func(int, int) bool) {
+func FoamSort(slice []int, less func(int, int) bool, callback func()) {
 	limit := len(slice)
 	jobs := make(chan int, limit/2)
 	results := make(chan bool, limit/2)
@@ -52,13 +94,16 @@ func FoamSort(slice []int, less func(int, int) bool) {
 	for swapped := true; swapped; {
 		swapped = sort(0)
 		swapped = sort(1) || swapped
+		if c := callback; c != nil {
+			c()
+		}
 	}
 	// Closes queues so worker threads can terminate.
 	close(jobs)
 	close(results)
 }
 
-func BubbleSort(slice []int, less func(int, int) bool) {
+func BubbleSort(slice []int, less func(int, int) bool, callback func()) {
 	limit := len(slice)
 	// Repeats until no swaps occur.
 	for swapped := true; swapped; {
@@ -73,13 +118,16 @@ func BubbleSort(slice []int, less func(int, int) bool) {
 			}
 			i = j
 		}
+		if c := callback; c != nil {
+			c()
+		}
 	}
 }
 
 // RedditSort is another variant of a parallel Bubble Sort intended to improve
 // performance by dividing the workload into larger chunks for each worker and
 // therefore make better use of the cache hierarchy.
-func RedditSort(slice []int, less func(int, int) bool) {
+func RedditSort(slice []int, less func(int, int) bool, callback func()) {
 	limit := len(slice)
 	workers := runtime.GOMAXPROCS(0)
 	batch := limit / workers
@@ -123,8 +171,36 @@ func RedditSort(slice []int, less func(int, int) bool) {
 		for w := 0; w < workers; w++ {
 			swapped = <-results || swapped
 		}
+		if c := callback; c != nil {
+			c()
+		}
 	}
 	// Closes queues so worker threads can terminate.
 	close(jobs)
 	close(results)
+}
+
+func GenerateBestSlice(c int) []int {
+	s := make([]int, c, c)
+	for i := 0; i < c; i++ {
+		s[i] = i
+	}
+	return s
+}
+
+func GenerateWorstSlice(c int) []int {
+	s := make([]int, c, c)
+	for i := 0; i < c; i++ {
+		s[i] = c - i
+	}
+	return s
+}
+
+func GenerateRandomSlice(c int) []int {
+	s := make([]int, c, c)
+	rand.Seed(time.Now().UnixNano())
+	for i := 0; i < c; i++ {
+		s[i] = rand.Intn(c)
+	}
+	return s
 }
