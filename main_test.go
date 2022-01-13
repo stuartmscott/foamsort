@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stuartmscott/foamsort"
 	"math/rand"
@@ -146,7 +147,7 @@ func benchmarkStandardSort_Random(b *testing.B, c int) {
 func foamSort(slice []int) {
 	main.FoamSort(slice, func(a, b int) bool {
 		if EXPENSIVE_COMPARISON {
-			time.Sleep(100 * time.Nanosecond)
+			busyWork()
 		}
 		return slice[a] < slice[b]
 	})
@@ -155,7 +156,7 @@ func foamSort(slice []int) {
 func bubbleSort(slice []int) {
 	main.BubbleSort(slice, func(a, b int) bool {
 		if EXPENSIVE_COMPARISON {
-			time.Sleep(100 * time.Nanosecond)
+			busyWork()
 		}
 		return slice[a] < slice[b]
 	})
@@ -164,7 +165,7 @@ func bubbleSort(slice []int) {
 func standardSort(slice []int) {
 	sort.Slice(slice, func(a, b int) bool {
 		if EXPENSIVE_COMPARISON {
-			time.Sleep(100 * time.Nanosecond)
+			busyWork()
 		}
 		return slice[a] < slice[b]
 	})
@@ -205,4 +206,15 @@ func sorted(s []int) bool {
 		p = n
 	}
 	return true
+}
+
+func busyWork() {
+	var sum int
+	for i := 0; i < 1000; i++ {
+		sum += i
+	}
+	expected := 499500
+	if sum != expected {
+		panic(fmt.Sprintf("Expected %d, got %d", expected, sum))
+	}
 }
