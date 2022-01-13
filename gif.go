@@ -22,10 +22,10 @@ func CreateGif(name string, slice []int, sorter func([]int, func(int, int) bool,
 	sorter(slice, less, func() {
 		frame := image.NewPaletted(bounds, palette)
 		frames = append(frames, frame)
-		delays = append(delays, 2)
+		delays = append(delays, 0)
 		draw.Draw(frame, bounds, &image.Uniform{color.White}, image.ZP, draw.Src)
 		for x := 0; x < limit; x++ {
-			frame.Set(x, slice[x], color.Black)
+			frame.Set(x, limit-slice[x], color.Black)
 		}
 	})
 
